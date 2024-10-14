@@ -15,6 +15,7 @@ const {Rmodels}=require("./schema/RegularAccess")
 const {RLeave}=require("./schema/Regular")
 const {Announcement}=require("./schema/Announcement")
 const {v4:uuidv4}=require("uuid")
+const cron = require('node-cron');
 
 // MongoDB Connection URL
 const mongoURI = 'mongodb+srv://kaschostel4:sivasankar@kaschostelcluster0.nopfs.mongodb.net/studentform';
@@ -855,6 +856,52 @@ app.delete('/students/delete', async (req, res) => {
         res.status(500).send({ message: 'Failed to delete students.' });
     }
 });
+
+
+
+
+
+
+async function callApi() {
+   
+    const now = new Date();
+
+    const hours = now.getHours().toString().padStart(2, '0');  
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    const seconds = now.getSeconds().toString().padStart(2, '0'); 
+
+
+    if(hours==9 && minutes==0 || hours==13 && minutes==0 || hours==16 && minutes==0 ){
+    let response1 = await Smodel.find({});
+    for (let i = 0; i < response1.length; i++) {
+        response1[i].status = "on";
+        await response1[i].save();
+    }
+}
+   if(hours==9 && minutes==50 || hours==14 && minutes==0 || hours==19 && minutes==0){
+    let response2 = await Smodel.find({});
+    for (let i = 0; i < response2.length; i++) {
+        response2[i].status = "off";
+        await response2[i].save();
+    }
+}
+       
+       
+   
+}
+
+
+
+cron.schedule('* * * * * *', () => { // Cron pattern for every second
+    callApi();
+});
+
+
+
+
+
+
+
 
 // Start the server
 const PORT = process.env.PORT || 5000;
